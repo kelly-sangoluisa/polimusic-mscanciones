@@ -1,77 +1,59 @@
-/**
- * Modelo de acceso a datos para la entidad Canción (TBL_SONG).
- * 
- * Este módulo define funciones asíncronas para realizar operaciones CRUD
- * sobre la tabla TBL_SONG en SQL Server, utilizando consultas parametrizadas
- * para evitar vulnerabilidades de SQL Injection.
- * 
- * Todas las funciones utilizan el pool de conexiones exportado por config/database.js.
- */
-const { poolPromise } = require("../config/database");
+const fetch = require('node-fetch');
 
-/**
- * Obtiene todas las canciones de la base de datos.
- * @returns {Promise<Array>} Lista de canciones.
- */
+const SUPABASE_URL = process.env.SUPABASE_URL.trim();
+const SUPABASE_KEY = process.env.SUPABASE_KEY.trim();
+
+const headers = {
+  apikey: SUPABASE_KEY,
+  Authorization: `Bearer ${SUPABASE_KEY}`,
+  'Content-Type': 'application/json',
+};
+
+// Obtener todas las canciones
 const getAllSongsFromDB = async () => {
-  const pool = await poolPromise;
-  const result = await pool.request().query("SELECT * FROM TBL_SONG");
-  return result.recordset;
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/tbl_song`, { headers });
+  return await res.json();
 };
 
-/**
- * Obtiene una canción por su ID.
- * @param {number} id - ID de la canción.
- * @returns {Promise<Object>} Canción encontrada o undefined.
- */
+// Obtener canción por ID
 const getSongByIdFromDB = async (id) => {
-  const pool = await poolPromise;
-  const result = await pool.request()
-    .input("id", id)
-    .query("SELECT * FROM TBL_SONG WHERE ID_SONG = @id");
-  return result.recordset[0];
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/tbl_song?id_song=eq.${id}`, { headers });
+  const data = await res.json();
+  return data[0];
 };
 
-/**
- * Crea una nueva canción en la base de datos.
- * @param {Object} song - Objeto con los datos de la canción.
- * @returns {Promise<void>}
- */
+// Crear canción
 const createSongInDB = async (song) => {
-  const pool = await poolPromise;
-  await pool.request()
-    .input("SONG_NAME", song.SONG_NAME)
-    .input("SONG_PATH", song.SONG_PATH)
-    .input("PLAYS", song.PLAYS)
-    .query("INSERT INTO TBL_SONG (SONG_NAME, SONG_PATH, PLAYS) VALUES (@SONG_NAME, @SONG_PATH, @PLAYS)");
+  await fetch(`${SUPABASE_URL}/rest/v1/tbl_song`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({
+      song_name: song.SONG_NAME,
+      song_path: song.SONG_PATH,
+      plays: song.PLAYS || 0,
+    }),
+  });
 };
 
-/**
- * Actualiza una canción existente por su ID.
- * @param {number} id - ID de la canción a actualizar.
- * @param {Object} song - Objeto con los nuevos datos de la canción.
- * @returns {Promise<void>}
- */
+// Actualizar canción
 const updateSongInDB = async (id, song) => {
-  const pool = await poolPromise;
-  await pool.request()
-    .input("id", id)
-    .input("SONG_NAME", song.SONG_NAME)
-    .input("SONG_PATH", song.SONG_PATH)
-    .input("PLAYS", song.PLAYS)
-    .query("UPDATE TBL_SONG SET SONG_NAME = @SONG_NAME, SONG_PATH = @SONG_PATH, PLAYS = @PLAYS WHERE ID_SONG = @id");
+  await fetch(`${SUPABASE_URL}/rest/v1/tbl_song?id_song=eq.${id}`, {
+    method: 'PATCH',
+    headers,
+    body: JSON.stringify({
+      song_name: song.SONG_NAME,
+      song_path: song.SONG_PATH,
+      plays: song.PLAYS || 0,
+    }),
+  });
 };
 
-/**
- * Elimina una canción por su ID.
- * @param {number} id - ID de la canción a eliminar.
- * @returns {Promise<void>}
- */
+// Eliminar canción
 const deleteSongInDB = async (id) => {
-  const pool = await poolPromise;
-  await pool.request()
-    .input("id", id)
-    .query("DELETE FROM TBL_SONG WHERE ID_SONG = @id");
+  await fetch(`${SUPABASE_URL}/rest/v1/tbl_song?id_song=eq.${id}`, {
+    method: 'DELETE',
+    headers,
+  });
 };
 
 module.exports = {
