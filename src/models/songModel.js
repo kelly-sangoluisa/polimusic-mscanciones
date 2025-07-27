@@ -1,80 +1,89 @@
-const { getConnection, sql } = require('../config/database');
+/*const { poolConnect, pool } = require('../config/database');
 
-class Song {
-    static async getAll() {
-        try {
-            const pool = await getConnection();
-            const result = await pool.request()
-                .query('SELECT ID_SONG as id, SONG_NAME as name, SONG_PATH as path, PLAYS as plays FROM TBL_SONG');
-            return result.recordset;
-        } catch (error) {
-            throw new Error('Error al obtener las canciones: ' + error.message);
-        }
-    }
-
-    static async getById(id) {
-        try {
-            const pool = await getConnection();
-            const result = await pool.request()
-                .input('id', sql.Int, id)
-                .query('SELECT ID_SONG as id, SONG_NAME as name, SONG_PATH as path, PLAYS as plays FROM TBL_SONG WHERE ID_SONG = @id');
-            return result.recordset[0];
-        } catch (error) {
-            throw new Error('Error al obtener la canción: ' + error.message);
-        }
-    }
-
-    static async create(songData) {
-        try {
-            const pool = await getConnection();
-            const result = await pool.request()
-                .input('name', sql.VarChar(50), songData.name)
-                .input('path', sql.VarChar(255), songData.path)
-                .input('plays', sql.Int, songData.plays || 0)
-                .query(`
-                    INSERT INTO TBL_SONG (SONG_NAME, SONG_PATH, PLAYS) 
-                    OUTPUT INSERTED.ID_SONG as id, INSERTED.SONG_NAME as name, 
-                           INSERTED.SONG_PATH as path, INSERTED.PLAYS as plays
-                    VALUES (@name, @path, @plays)
-                `);
-            return result.recordset[0];
-        } catch (error) {
-            throw new Error('Error al crear la canción: ' + error.message);
-        }
-    }
-
-    static async update(id, songData) {
-        try {
-            const pool = await getConnection();
-            const result = await pool.request()
-                .input('id', sql.Int, id)
-                .input('name', sql.VarChar(50), songData.name)
-                .input('path', sql.VarChar(255), songData.path)
-                .input('plays', sql.Int, songData.plays)
-                .query(`
-                    UPDATE TBL_SONG 
-                    SET SONG_NAME = @name, SONG_PATH = @path, PLAYS = @plays
-                    OUTPUT INSERTED.ID_SONG as id, INSERTED.SONG_NAME as name, 
-                           INSERTED.SONG_PATH as path, INSERTED.PLAYS as plays
-                    WHERE ID_SONG = @id
-                `);
-            return result.recordset[0];
-        } catch (error) {
-            throw new Error('Error al actualizar la canción: ' + error.message);
-        }
-    }
-
-    static async delete(id) {
-        try {
-            const pool = await getConnection();
-            const result = await pool.request()
-                .input('id', sql.Int, id)
-                .query('DELETE FROM TBL_SONG WHERE ID_SONG = @id');
-            return result.rowsAffected[0] > 0;
-        } catch (error) {
-            throw new Error('Error al eliminar la canción: ' + error.message);
-        }
-    }
+async function getAllSongs() {
+  await poolConnect;
+  const result = await pool.request().query('SELECT * FROM TBL_SONG');
+  return result.recordset;
 }
 
-module.exports = Song;
+async function getSongById(id) {
+  await poolConnect;
+  const result = await pool.request()
+    .input('id', id)
+    .query('SELECT * FROM TBL_SONG WHERE id = @id');
+  return result.recordset[0];
+}
+
+async function createSong(song) {
+  await poolConnect;
+  const result = await pool.request()
+    .input('title', song.title)
+    .input('artist', song.artist)
+    .input('genre', song.genre)
+    .query('INSERT INTO TBL_SONG (title, artist, genre) VALUES (@title, @artist, @genre)');
+  return result;
+}
+
+module.exports = { getAllSongs, getSongById, createSong };
+*/
+
+/*funcionando
+const { poolPromise } = require("../config/database");
+
+const getAllSongsFromDB = async () => {
+  const pool = await poolPromise;
+  const result = await pool.request().query("SELECT * FROM TBL_SONG");
+  return result.recordset;
+};
+
+module.exports = { getAllSongsFromDB };*/
+
+const { poolPromise } = require("../config/database");
+
+const getAllSongsFromDB = async () => {
+  const pool = await poolPromise;
+  const result = await pool.request().query("SELECT * FROM TBL_SONG");
+  return result.recordset;
+};
+
+const getSongByIdFromDB = async (id) => {
+  const pool = await poolPromise;
+  const result = await pool.request()
+    .input("id", id)
+    .query("SELECT * FROM TBL_SONG WHERE ID_SONG = @id");
+  return result.recordset[0];
+};
+
+const createSongInDB = async (song) => {
+  const pool = await poolPromise;
+  await pool.request()
+    .input("SONG_NAME", song.SONG_NAME)
+    .input("SONG_PATH", song.SONG_PATH)
+    .input("PLAYS", song.PLAYS)
+    .query("INSERT INTO TBL_SONG (SONG_NAME, SONG_PATH, PLAYS) VALUES (@SONG_NAME, @SONG_PATH, @PLAYS)");
+};
+
+const updateSongInDB = async (id, song) => {
+  const pool = await poolPromise;
+  await pool.request()
+    .input("id", id)
+    .input("SONG_NAME", song.SONG_NAME)
+    .input("SONG_PATH", song.SONG_PATH)
+    .input("PLAYS", song.PLAYS)
+    .query("UPDATE TBL_SONG SET SONG_NAME = @SONG_NAME, SONG_PATH = @SONG_PATH, PLAYS = @PLAYS WHERE ID_SONG = @id");
+};
+
+const deleteSongInDB = async (id) => {
+  const pool = await poolPromise;
+  await pool.request()
+    .input("id", id)
+    .query("DELETE FROM TBL_SONG WHERE ID_SONG = @id");
+};
+
+module.exports = {
+  getAllSongsFromDB,
+  getSongByIdFromDB,
+  createSongInDB,
+  updateSongInDB,
+  deleteSongInDB,
+};
