@@ -1,129 +1,95 @@
-const Song = require('../models/songModel');
+/**
+ * Controladores para la gestión de canciones (TBL_SONG).
+ * 
+ * Este módulo define las funciones controladoras que gestionan las operaciones
+ * CRUD sobre la entidad Canción, recibiendo las peticiones HTTP y delegando
+ * la lógica de acceso a datos al modelo correspondiente.
+ * 
+ * Cada función maneja los posibles errores y responde con el código HTTP adecuado.
+ */
+const {
+  getAllSongsFromDB,
+  getSongByIdFromDB,
+  createSongInDB,
+  updateSongInDB,
+  deleteSongInDB,
+} = require("../models/songModel");
 
-class SongController {
-    static async getAllSongs(req, res) {
-        try {
-            const songs = await Song.getAll();
-            res.json({
-                success: true,
-                data: songs,
-                message: 'Canciones obtenidas exitosamente'
-            });
-        } catch (error) {
-            res.status(500).json({
-                success: false,
-                message: error.message
-            });
-        }
-    }
+/**
+ * Controlador para obtener todas las canciones.
+ * @param {Request} req - Objeto de solicitud HTTP.
+ * @param {Response} res - Objeto de respuesta HTTP.
+ */
+const getAllSongs = async (req, res) => {
+  try {
+    const songs = await getAllSongsFromDB();
+    res.json(songs);
+  } catch (err) {
+    res.status(500).json({ error: "Error al obtener canciones", details: err.message });
+  }
+};
 
-    static async getSongById(req, res) {
-        try {
-            const { id } = req.params;
-            const song = await Song.getById(id);
-            
-            if (!song) {
-                return res.status(404).json({
-                    success: false,
-                    message: 'Canción no encontrada'
-                });
-            }
+/**
+ * Controlador para obtener una canción por su ID.
+ * @param {Request} req - Objeto de solicitud HTTP.
+ * @param {Response} res - Objeto de respuesta HTTP.
+ */
+const getSongById = async (req, res) => {
+  try {
+    const song = await getSongByIdFromDB(req.params.id);
+    if (!song) return res.status(404).json({ error: "Canción no encontrada" });
+    res.json(song);
+  } catch (err) {
+    res.status(500).json({ error: "Error al obtener la canción", details: err.message });
+  }
+};
 
-            res.json({
-                success: true,
-                data: song,
-                message: 'Canción obtenida exitosamente'
-            });
-        } catch (error) {
-            res.status(500).json({
-                success: false,
-                message: error.message
-            });
-        }
-    }
+/**
+ * Controlador para crear una nueva canción.
+ * @param {Request} req - Objeto de solicitud HTTP.
+ * @param {Response} res - Objeto de respuesta HTTP.
+ */
+const createSong = async (req, res) => {
+  try {
+    await createSongInDB(req.body);
+    res.status(201).json({ message: "Canción creada correctamente" });
+  } catch (err) {
+    res.status(500).json({ error: "Error al crear la canción", details: err.message });
+  }
+};
 
-    static async createSong(req, res) {
-        try {
-            const { name, path, plays } = req.body;
+/**
+ * Controlador para actualizar una canción existente.
+ * @param {Request} req - Objeto de solicitud HTTP.
+ * @param {Response} res - Objeto de respuesta HTTP.
+ */
+const updateSong = async (req, res) => {
+  try {
+    await updateSongInDB(req.params.id, req.body);
+    res.json({ message: "Canción actualizada correctamente" });
+  } catch (err) {
+    res.status(500).json({ error: "Error al actualizar la canción", details: err.message });
+  }
+};
 
-            if (!name || !path) {
-                return res.status(400).json({
-                    success: false,
-                    message: 'Los campos name y path son requeridos'
-                });
-            }
+/**
+ * Controlador para eliminar una canción por su ID.
+ * @param {Request} req - Objeto de solicitud HTTP.
+ * @param {Response} res - Objeto de respuesta HTTP.
+ */
+const deleteSong = async (req, res) => {
+  try {
+    await deleteSongInDB(req.params.id);
+    res.json({ message: "Canción eliminada correctamente" });
+  } catch (err) {
+    res.status(500).json({ error: "Error al eliminar la canción", details: err.message });
+  }
+};
 
-            const newSong = await Song.create({ name, path, plays });
-            res.status(201).json({
-                success: true,
-                data: newSong,
-                message: 'Canción creada exitosamente'
-            });
-        } catch (error) {
-            res.status(500).json({
-                success: false,
-                message: error.message
-            });
-        }
-    }
-
-    static async updateSong(req, res) {
-        try {
-            const { id } = req.params;
-            const { name, path, plays } = req.body;
-
-            if (!name || !path || plays === undefined) {
-                return res.status(400).json({
-                    success: false,
-                    message: 'Los campos name, path y plays son requeridos'
-                });
-            }
-
-            const updatedSong = await Song.update(id, { name, path, plays });
-            
-            if (!updatedSong) {
-                return res.status(404).json({
-                    success: false,
-                    message: 'Canción no encontrada'
-                });
-            }
-
-            res.json({
-                success: true,
-                data: updatedSong,
-                message: 'Canción actualizada exitosamente'
-            });
-        } catch (error) {
-            res.status(500).json({
-                success: false,
-                message: error.message
-            });
-        }
-    }
-
-    static async deleteSong(req, res) {
-        try {
-            const { id } = req.params;
-            const deleted = await Song.delete(id);
-
-            if (!deleted) {
-                return res.status(404).json({
-                    success: false,
-                    message: 'Canción no encontrada'
-                });
-            }
-
-            res.json({
-                success: true,
-                message: 'Canción eliminada exitosamente'
-            });
-        } catch (error) {
-            res.status(500).json({
-                success: false,
-                message: error.message
-            });
-        }
-    }
-}
-
-module.exports = SongController;
+module.exports = {
+  getAllSongs,
+  getSongById,
+  createSong,
+  updateSong,
+  deleteSong,
+};
