@@ -1,0 +1,35 @@
+services:
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: sql-server2022-songs
+    environment:
+      ACCEPT_EULA: Y
+      SA_PASSWORD: Politecnica1
+      MSSQL_PID: Express
+    ports:
+      - "14334:1433"
+    networks:
+      - msc-bdd
+  polimusic-mscanciones:
+    image: polimusic-mscanciones
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    environment:
+      NODE_ENV: production
+      DB_SERVER: sql-server2022-songs
+      DB_NAME: BDD_PoliMusic_Song
+      DB_USER: usr_polimusic_gr2
+      DB_PASSWORD: Politecnica1
+      DB_PORT: 1433
+      PORT: 3000
+    ports:
+      - 3000:3000
+    depends_on:
+      - db
+    networks:
+      - msc-bdd
+
+networks:
+  msc-bdd:
+    driver: bridge
