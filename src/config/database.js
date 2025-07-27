@@ -1,29 +1,50 @@
-const sql = require('mssql');
+/*const sql = require('mssql');
+require('dotenv').config();
 
 const config = {
-    server: process.env.DB_SERVER,
-    database: process.env.DB_NAME,
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
+    server: process.env.DB_SERVER,
+    database: process.env.DB_NAME,
     port: parseInt(process.env.DB_PORT),
     options: {
-        encrypt: true,
-        trustServerCertificate: false
+        encrypt: false,
+        trustServerCertificate: true
     }
 };
 
-let pool = null;
-
-const getConnection = async () => {
+async function connectDB() {
     try {
-        if (!pool) {
-            pool = await sql.connect(config);
-        }
+        const pool = await sql.connect(config);
+        console.log('✅ Conectado a SQL Server');
         return pool;
-    } catch (error) {
-        console.error('Error conectando a la base de datos:', error);
-        throw error;
+    } catch (err) {
+        console.error('❌ Error al conectar a la base de datos:', err);
+    }
+}
+
+module.exports = { connectDB, sql };*/
+const sql = require('mssql');
+require('dotenv').config();
+
+const config = {
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    server: process.env.DB_SERVER,
+    database: process.env.DB_NAME,
+    port: parseInt(process.env.DB_PORT),
+    options: {
+        encrypt: false,
+        trustServerCertificate: true
     }
 };
 
-module.exports = { getConnection, sql };
+const poolPromise = new sql.ConnectionPool(config)
+    .connect()
+    .then(pool => {
+        console.log('✅ Conectado a SQL Server');
+        return pool;
+    })
+    .catch(err => console.error('❌ Error al conectar a la base de datos:', err));
+
+module.exports = { poolPromise };
