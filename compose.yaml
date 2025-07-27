@@ -10,6 +10,18 @@ services:
       - "14334:1433"
     networks:
       - msc-bdd
+
+  db-init:
+    image: mcr.microsoft.com/mssql-tools
+    depends_on:
+      - db
+    entrypoint: ["/bin/bash", "/scripts/import-db.sh"]
+    volumes:
+      - ./db-init/BDD-polimusic-mscanciones.sql:/scripts/BDD-polimusic-mscanciones.sql
+      - ./db-init/import-db.sh:/scripts/import-db.sh
+    networks:
+      - msc-bdd
+  
   polimusic-mscanciones:
     image: polimusic-mscanciones
     build:
@@ -17,7 +29,7 @@ services:
       dockerfile: ./Dockerfile
     environment:
       NODE_ENV: production
-      DB_SERVER: sql-server2022-songs
+      DB_SERVER: db
       DB_NAME: BDD_PoliMusic_Song
       DB_USER: usr_polimusic_gr2
       DB_PASSWORD: Politecnica1
@@ -27,6 +39,7 @@ services:
       - 3000:3000
     depends_on:
       - db
+      - db-init
     networks:
       - msc-bdd
 
