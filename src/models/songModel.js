@@ -1,51 +1,29 @@
-/*const { poolConnect, pool } = require('../config/database');
-
-async function getAllSongs() {
-  await poolConnect;
-  const result = await pool.request().query('SELECT * FROM TBL_SONG');
-  return result.recordset;
-}
-
-async function getSongById(id) {
-  await poolConnect;
-  const result = await pool.request()
-    .input('id', id)
-    .query('SELECT * FROM TBL_SONG WHERE id = @id');
-  return result.recordset[0];
-}
-
-async function createSong(song) {
-  await poolConnect;
-  const result = await pool.request()
-    .input('title', song.title)
-    .input('artist', song.artist)
-    .input('genre', song.genre)
-    .query('INSERT INTO TBL_SONG (title, artist, genre) VALUES (@title, @artist, @genre)');
-  return result;
-}
-
-module.exports = { getAllSongs, getSongById, createSong };
-*/
-
-/*funcionando
+/**
+ * Modelo de acceso a datos para la entidad Canción (TBL_SONG).
+ * 
+ * Este módulo define funciones asíncronas para realizar operaciones CRUD
+ * sobre la tabla TBL_SONG en SQL Server, utilizando consultas parametrizadas
+ * para evitar vulnerabilidades de SQL Injection.
+ * 
+ * Todas las funciones utilizan el pool de conexiones exportado por config/database.js.
+ */
 const { poolPromise } = require("../config/database");
 
+/**
+ * Obtiene todas las canciones de la base de datos.
+ * @returns {Promise<Array>} Lista de canciones.
+ */
 const getAllSongsFromDB = async () => {
   const pool = await poolPromise;
   const result = await pool.request().query("SELECT * FROM TBL_SONG");
   return result.recordset;
 };
 
-module.exports = { getAllSongsFromDB };*/
-
-const { poolPromise } = require("../config/database");
-
-const getAllSongsFromDB = async () => {
-  const pool = await poolPromise;
-  const result = await pool.request().query("SELECT * FROM TBL_SONG");
-  return result.recordset;
-};
-
+/**
+ * Obtiene una canción por su ID.
+ * @param {number} id - ID de la canción.
+ * @returns {Promise<Object>} Canción encontrada o undefined.
+ */
 const getSongByIdFromDB = async (id) => {
   const pool = await poolPromise;
   const result = await pool.request()
@@ -54,6 +32,11 @@ const getSongByIdFromDB = async (id) => {
   return result.recordset[0];
 };
 
+/**
+ * Crea una nueva canción en la base de datos.
+ * @param {Object} song - Objeto con los datos de la canción.
+ * @returns {Promise<void>}
+ */
 const createSongInDB = async (song) => {
   const pool = await poolPromise;
   await pool.request()
@@ -63,6 +46,12 @@ const createSongInDB = async (song) => {
     .query("INSERT INTO TBL_SONG (SONG_NAME, SONG_PATH, PLAYS) VALUES (@SONG_NAME, @SONG_PATH, @PLAYS)");
 };
 
+/**
+ * Actualiza una canción existente por su ID.
+ * @param {number} id - ID de la canción a actualizar.
+ * @param {Object} song - Objeto con los nuevos datos de la canción.
+ * @returns {Promise<void>}
+ */
 const updateSongInDB = async (id, song) => {
   const pool = await poolPromise;
   await pool.request()
@@ -73,6 +62,11 @@ const updateSongInDB = async (id, song) => {
     .query("UPDATE TBL_SONG SET SONG_NAME = @SONG_NAME, SONG_PATH = @SONG_PATH, PLAYS = @PLAYS WHERE ID_SONG = @id");
 };
 
+/**
+ * Elimina una canción por su ID.
+ * @param {number} id - ID de la canción a eliminar.
+ * @returns {Promise<void>}
+ */
 const deleteSongInDB = async (id) => {
   const pool = await poolPromise;
   await pool.request()
