@@ -1,4 +1,50 @@
-node_modules
-npm-debug.log
+# --- NODE.JS ---
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 .env
-.git
+.env.*.local
+
+# --- LOGS ---
+logs
+*.log
+*.log.*
+
+# --- OS FILES ---
+.DS_Store
+Thumbs.db
+
+# --- VSCODE ---
+.vscode/
+*.code-workspace
+
+# --- COVERAGE / TEST ---
+coverage/
+.nyc_output/
+test-output/
+
+# --- DOCKER ---
+docker-compose.override.yml
+docker-compose.debug.yml
+*.local.yml
+Dockerfile.*
+
+# --- BUILD OUTPUT ---
+dist/
+build/
+.tmp/
+temp/
+
+# --- DATABASE TEMP FILES ---
+*.sqlite
+*.db
+*.pid
+
+# --- OPTIONAL: ignore your own scripts or generated data ---
+scripts/
+data/
+
+# --- IGNORE DOCKER COMPOSE FILES ---
+compose*.debug.*
+compose*.override.*
