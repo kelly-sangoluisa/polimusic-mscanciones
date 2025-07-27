@@ -1,24 +1,19 @@
-const express = require('express');
-const cors = require('cors');
-const helmet = require('helmet');
-const morgan = require('morgan');
-const songRoutes = require('./routes/songRoutes');
-
+/**
+ * Configuración principal de la aplicación Express.
+ * 
+ * Este módulo inicializa la aplicación Express, configura el middleware para
+ * procesar solicitudes JSON y define las rutas principales del microservicio.
+ * 
+ * Rutas:
+ *   - /api/songs: Gestiona las operaciones CRUD sobre canciones.
+ */
+const express = require("express");
 const app = express();
+const songRoutes = require("./routes/songRoutes");
 
-// Middlewares
-app.use(helmet());
-app.use(cors());
-app.use(morgan('combined'));
+// Middleware para parsear solicitudes JSON
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
-// Rutas
-app.use('/api/songs', songRoutes);
-
-// Ruta de prueba
-app.get('/health', (req, res) => {
-    res.json({ status: 'OK', message: 'Microservicio funcionando correctamente' });
-});
+// Rutas para la gestión de canciones
+app.use("/api/songs", songRoutes);
 
 module.exports = app;
